@@ -14,6 +14,15 @@ class Task extends Model
         'created_by'
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'due_date' => 'datetime',
+    ];
+
     public function interns()
     {
         return $this->belongsToMany(User::class, 'intern_task');

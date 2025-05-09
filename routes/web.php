@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\InternTaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,5 +16,6 @@ use App\Http\Controllers\MessageController;
 require __DIR__.'/admin.php';
 require __DIR__.'/intern.php';
 require __DIR__.'/chat.php';  // Include chat routes
+
 
 

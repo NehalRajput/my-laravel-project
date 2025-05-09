@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\TaskController;
+
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\InternTaskController;
 
 Route::middleware(['guest:user'])->name('intern.')->group(function () {
     Route::controller(AuthController::class)->group(function () {
@@ -25,25 +26,19 @@ Route::middleware("auth:user")->group(function () {
     // Intern Dashboard
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     
-    // Tasks Routes
-    Route::controller(TaskController::class)->prefix('tasks')->name('intern.tasks.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::put('/{task}/status', 'updateStatus')->name('update-task-status');
-    });
+   // Intern Task Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/intern/tasks', [InternTaskController::class, 'index'])->name('intern.tasks.index');
+    Route::get('/intern/tasks/{task}', [InternTaskController::class, 'show'])->name('intern.tasks.show');
+    Route::post('/intern/tasks/{task}/comment', [InternTaskController::class, 'addComment'])->name('intern.tasks.comment');
+});
+
 
     // Comments Routes
     Route::controller(CommentController::class)->prefix('comments')->name('intern.comments.')->group(function () {
         Route::post('/tasks/{task}', 'store')->name('store');
     });
 
-    // Chat System
-    /*Route::controller(ChatController::class)->prefix('chat')->name('chat.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/send', 'sendMessage')->name('send');
-        Route::get('/messages/{admin}', 'getMessages')->name('messages');
-        Route::post('/mark-read', 'markAsRead')->name('mark-read');
-    });
-*/
-    // Logout
+     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
