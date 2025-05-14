@@ -8,14 +8,17 @@ use App\Models\User;
 |--------------------------------------------------------------------------
 | Broadcast Channels
 |--------------------------------------------------------------------------
+|
+| Here you may register all of the event broadcasting channels that your
+| application supports. The given channel authorization callbacks are
+| used to check if an authenticated user can listen to the channel.
+|
 */
 
 Broadcast::channel('chat.{id}', function ($user, $id) {
-    // Check if the authenticated user is either an admin or an intern
+    // Allow users to listen to their own channel
     if (auth()->guard('admin')->check()) {
-        return true; // Admins can access all channels
+        return auth()->guard('admin')->id() == $id;
     }
-
-    // For interns, check if they are the intended recipient
-    return (int) $user->id === (int) $id;
+    return auth()->id() == $id;
 }); 

@@ -30,8 +30,13 @@
                                                 data-user-name="{{ $intern->name }}"
                                             >
                                                 <div class="flex items-center space-x-3">
-                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm">
+                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm relative">
                                                         <span class="text-base font-semibold text-indigo-800">{{ substr($intern->name, 0, 1) }}</span>
+                                                        @if($intern->unread_count > 0)
+                                                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-badge" data-user-type="intern" data-user-id="{{ $intern->id }}">
+                                                                {{ $intern->unread_count }}
+                                                            </span>
+                                                        @endif
                                                     </span>
                                                     <div>
                                                         <span class="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{{ $intern->name }}</span>
@@ -54,8 +59,13 @@
                                                 data-user-name="{{ $admin->name }}"
                                             >
                                                 <div class="flex items-center space-x-3">
-                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm">
+                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm relative">
                                                         <span class="text-base font-semibold text-indigo-800">{{ substr($admin->name, 0, 1) }}</span>
+                                                        @if($admin->unread_count > 0)
+                                                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-badge" data-user-type="admin" data-user-id="{{ $admin->id }}">
+                                                                {{ $admin->unread_count }}
+                                                            </span>
+                                                        @endif
                                                     </span>
                                                     <div>
                                                         <span class="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{{ $admin->name }}</span>
@@ -142,73 +152,93 @@
 </div>
 
 @push('scripts')
-<!-- Pusher Script -->
-<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Pusher
-    const pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
-        cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
-        encrypted: true,
-        authEndpoint: '/broadcasting/auth',
-        auth: {
-            headers: {
-                'X-CSRF-Token': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
+    // Initialize variables
+    let currentChannel = null;
+    let isSubscribed = false;
+    const currentUserId = '{{ Auth::id() }}';
+    const userType = '{{ $userType }}';
+    let lastMessageId = null; // Track last message to prevent duplicates
+
+    // Initialize Echo
+    function initializeEcho() {
+        if (isSubscribed || !window.Echo) {
+            return;
         }
-    });
 
-    // Subscribe to private channel for current user
-    const currentUserId = '{{ Auth::guard("admin")->check() ? Auth::guard("admin")->id() : Auth::id() }}';
-    const channel = pusher.subscribe(`private-chat.${currentUserId}`);
-    
-    // Debug connection status
-    pusher.connection.bind('connected', () => {
-        console.log('Connected to Pusher');
-    });
+        try {
+            // Subscribe to private channel for receiving messages
+            const channelName = `chat.${currentUserId}`;
+            currentChannel = window.Echo.channel(channelName);
 
-    channel.bind('pusher:subscription_succeeded', () => {
-        console.log('Successfully subscribed to channel');
-    });
+            // Listen for new messages
+            currentChannel.listen('.MessageSent', (data) => {
+                console.group('📨 New Message Received');
+                console.log('Message Data:', data);
+                
+                // Prevent duplicate messages
+                if (lastMessageId === data.message.id) {
+                    console.log('⚠️ Duplicate message detected - ignoring');
+                    console.groupEnd();
+                    return;
+                }
+                lastMessageId = data.message.id;
+                
+                const currentReceiverId = document.getElementById('receiver_id').value;
+                const currentReceiverType = document.getElementById('receiver_type').value;
+                
+                if ((data.message.sender_id == currentReceiverId && data.message.sender_type == currentReceiverType) || 
+                    (data.message.receiver_id == currentReceiverId && data.message.receiver_type == currentReceiverType)) {
+                    console.log('✅ Message belongs to current chat - displaying');
+                    appendMessage(data.message);
+                    scrollToBottom();
+                    
+                    // Mark message as read if it's incoming
+                    if (data.message.receiver_id == currentUserId) {
+                        markMessageAsRead(data.message.id);
+                    }
+                } else {
+                    console.log('ℹ️ Message not for current chat - updating badge');
+                    updateNotificationBadge(data.message.sender_type, data.message.sender_id);
+                }
+                console.groupEnd();
+            });
 
-    pusher.connection.bind('error', error => {
-        console.error('Pusher connection error:', error);
-    });
+            // Monitor connection state
+            window.Echo.connector.pusher.connection.bind('state_change', (states) => {
+                console.group('🔄 Connection State Change');
+                console.log('Previous:', states.previous);
+                console.log('Current:', states.current);
+                console.groupEnd();
+            });
 
-    // Listen for messages
-    channel.bind('MessageSent', function(data) {
-        console.log('Received message:', data);
-        if (data.message) {
-            const currentReceiverId = document.getElementById('receiver_id').value;
-            // Only append message if it's from the current chat
-            if (data.message.sender_id == currentReceiverId || data.message.receiver_id == currentReceiverId) {
-                appendMessage(data.message);
-                scrollToBottom();
-            }
+            isSubscribed = true;
+            console.log('✅ Echo channel subscription successful');
+        } catch (error) {
+            console.error('❌ Error subscribing to channel:', error);
         }
-    });
+    }
 
-    // Handle subscription error
-    channel.bind('pusher:subscription_error', function(status) {
-        console.error('Pusher subscription error:', status);
-    });
+    // Initialize Echo when page loads and Echo is available
+    if (window.Echo) {
+        initializeEcho();
+    } else {
+        window.addEventListener('echoConnected', initializeEcho);
+    }
 
     // Handle user selection
-    const userButtons = document.querySelectorAll('.user-select');
-    userButtons.forEach(button => {
+    document.querySelectorAll('.user-select').forEach(button => {
         button.addEventListener('click', function() {
             const userType = this.getAttribute('data-user-type');
             const userId = this.getAttribute('data-user-id');
             const userName = this.getAttribute('data-user-name');
 
-            // Update hidden fields
-            document.getElementById('receiver_type').value = userType === 'intern' ? 'App\\Models\\User' : 'App\\Models\\Admin';
-            document.getElementById('receiver_id').value = userId;
-
-            // Update chat header
+            // Update UI
             document.getElementById('chat-user-name').textContent = userName;
             document.getElementById('chat-user-initial').textContent = userName.charAt(0);
+            document.getElementById('receiver_type').value = userType === 'intern' ? 'App\\Models\\User' : 'App\\Models\\Admin';
+            document.getElementById('receiver_id').value = userId;
 
             // Show chat interface
             document.getElementById('chat-header').classList.remove('hidden');
@@ -216,46 +246,21 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('message-form').classList.remove('hidden');
             document.getElementById('no-chat-selected').classList.add('hidden');
 
-            // Load messages for selected user
+            // Remove notification badge
+            const badge = document.querySelector(`.notification-badge[data-user-type="${userType}"][data-user-id="${userId}"]`);
+            if (badge) {
+                badge.remove();
+            }
+
+            // Load messages
             loadMessages(userId, userType);
         });
     });
 
-    function loadMessages(userId, userType) {
-        const messagesContainer = document.querySelector('#messages-container > div');
-        messagesContainer.innerHTML = ''; // Clear existing messages
-
-        fetch(`/messages?user_id=${userId}&user_type=${userType}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            window.currentUser = data.current_user;
-            data.messages.forEach(message => {
-                appendMessage(message);
-            });
-            scrollToBottom();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load messages. Please try again.');
-        });
-    }
-
-    // Handle message form submission
-    const messageForm = document.getElementById('send-message-form');
-    messageForm.addEventListener('submit', function(e) {
+    // Handle message sending
+    document.getElementById('send-message-form').addEventListener('submit', function(e) {
         e.preventDefault();
-
+        
         const messageInput = document.getElementById('message-input');
         const content = messageInput.value.trim();
         if (!content) return;
@@ -267,7 +272,10 @@ document.addEventListener('DOMContentLoaded', function() {
             _token: '{{ csrf_token() }}'
         };
 
-        // Send message using fetch API
+        // Clear input immediately for better UX
+        messageInput.value = '';
+
+        // Send message
         fetch('{{ route("messages.store") }}', {
             method: 'POST',
             headers: {
@@ -277,86 +285,200 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(formData)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            // Update current user if needed
-            if (data.current_user) {
-                window.currentUser = data.current_user;
+            // Only append the message if it's not already displayed
+            if (lastMessageId !== data.message.id) {
+                appendMessage(data.message);
+                lastMessageId = data.message.id;
+                scrollToBottom();
             }
-            
-            // Clear input
-            messageInput.value = '';
-            
-            // Add message to chat
-            appendMessage(data.message);
-
-            // Scroll to bottom
-            scrollToBottom();
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error sending message:', error);
+            messageInput.value = content; // Restore message on error
             alert('Failed to send message. Please try again.');
         });
     });
 
-    function scrollToBottom() {
-        const container = document.getElementById('messages-container');
-        const messagesDiv = container.querySelector('div');
-        container.scrollTop = messagesDiv.scrollHeight;
+    function loadMessages(userId, userType) {
+        const messagesContainer = document.querySelector('#messages-container > div');
+        messagesContainer.innerHTML = '';
+
+        fetch(`/messages?user_id=${userId}&user_type=${userType}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            data.messages.forEach(message => {
+                appendMessage(message);
+            });
+            scrollToBottom();
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+            alert('Failed to load messages. Please try again.');
+        });
     }
 
     function appendMessage(message) {
-        const isOwn = message.sender_type === window.currentUser.type && message.sender_id === window.currentUser.id;
-        const messagesContainer = document.querySelector('#messages-container > div');
+        const currentUserType = '{{ $userType }}' === 'admin' ? 'App\\Models\\Admin' : 'App\\Models\\User';
+        const currentUserId = parseInt('{{ Auth::id() }}');
         
+        // Debug log to see message details
+        console.log('Message comparison:', {
+            message_sender_type: message.sender_type,
+            message_sender_id: message.sender_id,
+            current_user_type: currentUserType,
+            current_user_id: currentUserId
+        });
+
+        const isOwn = message.sender_type === currentUserType && 
+                     parseInt(message.sender_id) === currentUserId;
+        
+        const messagesContainer = document.querySelector('#messages-container > div');
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`;
         
-        const messageContent = `
+        messageDiv.innerHTML = `
             <div class="max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col">
-                <div class="flex items-center mb-1 ${isOwn ? 'justify-end' : 'justify-start'}">
-                    <span class="text-xs text-gray-500">${isOwn ? 'You' : message.sender_name}</span>
+                <div class="flex items-center mb-1 ${isOwn ? 'justify-end' : 'justify-start'} space-x-2">
+                    <div class="flex items-center ${isOwn ? 'flex-row-reverse' : 'flex-row'} space-x-2">
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-full ${
+                            isOwn ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'
+                        }">${message.sender_name.charAt(0)}</span>
+                        <span class="text-xs text-gray-500">${isOwn ? 'You' : message.sender_name}</span>
+                    </div>
                 </div>
                 <div class="${isOwn 
-                    ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none' 
-                    : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none'
-                } px-4 py-2 break-words shadow-sm">
+                    ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none ml-auto' 
+                    : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none mr-auto'
+                } px-4 py-2 break-words shadow-sm relative">
                     ${message.content}
+                    <div class="absolute ${isOwn ? '-left-2' : '-right-2'} top-0 
+                        ${isOwn ? 'border-r-indigo-600' : 'border-l-gray-100'} 
+                        border-t-transparent border-b-transparent 
+                        ${isOwn ? 'border-r-[10px]' : 'border-l-[10px]'} border-t-[10px] border-b-[10px]">
+                    </div>
                 </div>
-                <div class="text-xs text-gray-400 mt-1 ${isOwn ? 'text-right' : 'text-left'}">
-                    ${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <div class="text-xs text-gray-400 mt-1 ${isOwn ? 'text-right' : 'text-left'} flex items-center ${isOwn ? 'justify-end' : 'justify-start'} space-x-2">
+                    <span>${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    ${isOwn ? `
+                        <svg class="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    ` : ''}
                 </div>
             </div>
         `;
         
-        messageDiv.innerHTML = messageContent;
         messagesContainer.appendChild(messageDiv);
-        
-        // Add a small delay to ensure the DOM has updated
-        setTimeout(scrollToBottom, 100);
     }
 
-    // Add mutation observer to handle dynamic content changes
-    const messagesContainer = document.getElementById('messages-container');
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-                scrollToBottom();
+    function scrollToBottom() {
+        const container = document.getElementById('messages-container');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function markMessageAsRead(messageId) {
+        fetch(`/messages/${messageId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         });
-    });
+    }
 
-    observer.observe(messagesContainer, {
-        childList: true,
-        subtree: true
-    });
+    function updateNotificationBadge(senderType, senderId) {
+        fetch('/messages/unread-counts')
+            .then(response => response.json())
+            .then(counts => {
+                Object.entries(counts).forEach(([key, count]) => {
+                    const [type, id] = key.split('_');
+                    let badge = document.querySelector(`.notification-badge[data-user-type="${type}"][data-user-id="${id}"]`);
+                    
+                    if (count > 0) {
+                        if (badge) {
+                            badge.textContent = count;
+                        } else {
+                            const userButton = document.querySelector(`.user-select[data-user-type="${type}"][data-user-id="${id}"] .inline-flex`);
+                            if (userButton) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-badge';
+                                newBadge.setAttribute('data-user-type', type);
+                                newBadge.setAttribute('data-user-id', id);
+                                newBadge.textContent = count;
+                                userButton.appendChild(newBadge);
+                            }
+                        }
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                });
+            });
+    }
+
+    // Start polling for unread messages
+    setInterval(() => {
+        updateNotificationBadge();
+    }, 30000); // Every 30 seconds
 });
 </script>
+
+<style>
+/* Enhanced scrollbar styling */
+#messages-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) rgba(229, 231, 235, 0.3);
+}
+
+#messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#messages-container::-webkit-scrollbar-track {
+    background: rgba(229, 231, 235, 0.3);
+}
+
+#messages-container::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+/* Message animations */
+.message-enter {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.message-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+}
+
+/* Ensure proper container heights */
+.flex.h-\[600px\] {
+    height: 600px;
+    max-height: 600px;
+    min-height: 600px;
+}
+
+#messages-container {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#messages-container > div {
+    width: 100%;
+    padding-bottom: 15px;
+}
+</style>
 @endpush
 
 @endsection
