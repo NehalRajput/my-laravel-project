@@ -177,11 +177,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Listen for messages
-    channel.bind('App\\Events\\MessageSent', function(data) {
+    channel.bind('MessageSent', function(data) {
         console.log('Received message:', data);
         if (data.message) {
-            appendMessage(data.message);
-            scrollToBottom();
+            const currentReceiverId = document.getElementById('receiver_id').value;
+            // Only append message if it's from the current chat
+            if (data.message.sender_id == currentReceiverId || data.message.receiver_id == currentReceiverId) {
+                appendMessage(data.message);
+                scrollToBottom();
+            }
         }
     });
 

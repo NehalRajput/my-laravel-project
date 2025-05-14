@@ -53,6 +53,18 @@ class MessageController extends Controller
 
             $sender = Auth::guard('admin')->check() ? Auth::guard('admin')->user() : Auth::user();
             
+            if (!$sender) {
+                throw new \Exception('Unauthorized: No authenticated user found');
+            }
+
+            // Validate receiver exists
+            $receiverClass = $request->receiver_type;
+            $receiver = $receiverClass::find($request->receiver_id);
+            
+            if (!$receiver) {
+                throw new \Exception('Invalid receiver: User not found');
+            }
+            
             $message = Message::create([
                 'content' => $request->content,
                 'sender_type' => get_class($sender),
@@ -64,8 +76,17 @@ class MessageController extends Controller
             // Add sender name to the message
             $message->sender_name = $sender->name;
 
-            // Broadcast the message
-            broadcast(new MessageSent($message))->toOthers();
+            try {
+                // Broadcast the message
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $e) {
+                Log::error('Broadcasting failed: ' . $e->getMessage(), [
+                    'message_id' => $message->id,
+                    'sender_id' => $sender->id,
+                    'receiver_id' => $request->receiver_id
+                ]);
+                // Don't throw here - message is saved even if broadcast fails
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -78,10 +99,14 @@ class MessageController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Message creation failed: ' . $e->getMessage());
+            Log::error('Message creation failed: ' . $e->getMessage(), [
+                'sender_id' => $sender->id ?? null,
+                'receiver_id' => $request->receiver_id ?? null,
+                'content' => $request->content ?? null
+            ]);
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to send message'
+                'message' => 'Failed to send message: ' . $e->getMessage()
             ], 500);
         }
     }

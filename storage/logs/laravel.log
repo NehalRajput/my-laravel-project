@@ -37693,3 +37693,8 @@
 [2025-05-14 07:11:17] local.INFO: Message store attempt {"request_data":{"content":"erg","receiver_type":"App\\Models\\User","receiver_id":"1","_token":"xoo90bVS23GYHugu1TPdaSi58ebHN5VyeCgENLMH"},"user":"admin"} 
 [2025-05-14 07:11:17] local.INFO: Broadcasting message {"message_id":46,"sender":"Admin User","receiver_id":"1"} 
 [2025-05-14 07:11:17] local.INFO: Message broadcast complete  
+[2025-05-14 08:05:11] local.ERROR: Message creation failed: Invalid channel name private-chat.App\Models\User.1  
+[2025-05-14 08:05:39] local.ERROR: Message creation failed: Invalid channel name private-chat.App\Models\User.1  
+[2025-05-14 08:06:02] local.ERROR: Message creation failed: Invalid channel name private-chat.App\Models\User.1  
+[2025-05-14 08:06:11] local.ERROR: Message creation failed: Invalid channel name private-chat.App\Models\User.1  
+[2025-05-14 08:06:22] local.ERROR: Message creation failed: Invalid channel name private-chat.App\Models\User.1  
