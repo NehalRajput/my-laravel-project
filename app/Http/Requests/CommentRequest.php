@@ -12,19 +12,19 @@ class CommentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // For update and delete, only admin can perform these actions
+        // For update and delete, only admin is authorized
         if (in_array($this->method(), ['PUT', 'PATCH', 'DELETE'])) {
             return Auth::guard('admin')->check();
         }
         
-        // For other operations (create), any authenticated user can perform
+        // For other operations (create), any authenticated user is authorized
         return Auth::check();
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
@@ -33,6 +33,7 @@ class CommentRequest extends FormRequest
             'is_query' => 'boolean',
         ];
 
+        // If this is a store request, task_id is required
         if ($this->isMethod('POST')) {
             $rules['task_id'] = 'required|exists:tasks,id';
         }
@@ -41,30 +42,32 @@ class CommentRequest extends FormRequest
     }
 
     /**
-     * Get custom error messages for validator errors.
+     * Get custom messages for validator errors.
      *
-     * @return array<string, string>
+     * @return array
      */
     public function messages(): array
     {
         return [
             'content.required' => 'Comment content is required.',
-            'content.max' => 'Comment cannot exceed 1000 characters.',
+            'content.max' => 'Comment cannot be longer than 1000 characters.',
             'task_id.required' => 'Task ID is required.',
-            'task_id.exists' => 'Selected task does not exist.',
-            'is_query.boolean' => 'Invalid query flag value.',
+            'task_id.exists' => 'The selected task does not exist.',
+            'is_query.boolean' => 'Is query field must be true or false.',
         ];
     }
 
     /**
-     * Handle a failed authorization attempt.
+     * Prepare the data for validation.
      *
      * @return void
-     *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    protected function failedAuthorization()
+    protected function prepareForValidation()
     {
-        throw new \Illuminate\Auth\Access\AuthorizationException('You are not authorized to perform this action.');
+        if ($this->has('is_query')) {
+            $this->merge([
+                'is_query' => $this->boolean('is_query'),
+            ]);
+        }
     }
 } 

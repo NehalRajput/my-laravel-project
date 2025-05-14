@@ -54,20 +54,23 @@ class AdminController extends Controller
 
             Log::info('Admin created successfully', ['admin_id' => $admin->id]);
 
-            foreach ($request->permissions as $permissionId) {
-                RolePermission::create([
+            // Only assign permissions if they were selected
+            if ($request->has('permissions')) {
+                foreach ($request->permissions as $permissionId) {
+                    RolePermission::create([
+                        'admin_id' => $admin->id,
+                        'permission_id' => $permissionId
+                    ]);
+                }
+
+                Log::info('Permissions assigned to admin', [
                     'admin_id' => $admin->id,
-                    'permission_id' => $permissionId
+                    'permissions' => $request->permissions
                 ]);
             }
 
             DB::commit();
             
-            Log::info('Permissions assigned to admin', [
-                'admin_id' => $admin->id,
-                'permissions' => $request->permissions
-            ]);
-
             return redirect()->route('admin.admins.index')
                 ->with('success', 'Admin created successfully.');
 

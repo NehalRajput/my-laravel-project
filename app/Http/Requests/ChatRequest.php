@@ -11,40 +11,39 @@ class ChatRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return true; // Assuming we want logged-in users to be able to send messages
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'message' => 'required|string|max:1000',
             'recipient_id' => 'required|exists:users,id',
-            'attachment' => 'nullable|file|max:10240', // 10MB max file size
-            'message_type' => 'required|in:text,file,image',
+            'message' => 'required_without:attachment|string|max:1000',
+            'message_type' => 'required|string|in:text,file',
+            'attachment' => 'nullable|file|max:10240', // Max 10MB file size
         ];
     }
 
     /**
-     * Get custom error messages for validator errors.
+     * Get custom messages for validator errors.
      *
-     * @return array<string, string>
+     * @return array
      */
     public function messages(): array
     {
         return [
-            'message.required' => 'Please enter a message.',
-            'message.max' => 'Message cannot exceed 1000 characters.',
-            'recipient_id.required' => 'Recipient is required.',
-            'recipient_id.exists' => 'Selected recipient is invalid.',
-            'attachment.file' => 'The attachment must be a valid file.',
-            'attachment.max' => 'File size cannot exceed 10MB.',
+            'recipient_id.required' => 'Please select a recipient for your message.',
+            'recipient_id.exists' => 'The selected recipient does not exist.',
+            'message.required_without' => 'Please provide either a message or an attachment.',
+            'message.max' => 'The message cannot be longer than 1000 characters.',
             'message_type.required' => 'Message type is required.',
-            'message_type.in' => 'Invalid message type specified.',
+            'message_type.in' => 'Invalid message type.',
+            'attachment.max' => 'The attachment must not be larger than 10MB.',
         ];
     }
 } 

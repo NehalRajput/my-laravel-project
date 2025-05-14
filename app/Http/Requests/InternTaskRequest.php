@@ -7,36 +7,60 @@ use Illuminate\Support\Facades\Auth;
 
 class InternTaskRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
-        if ($this->route('task')) {
-            return Auth::check() && 
-                   Auth::user()->role === 'intern' && 
-                   $this->route('task')->interns->contains(Auth::id());
-        }
-        return Auth::check() && Auth::user()->role === 'intern';
+        // Only allow interns to make this request
+        return Auth::check() && Auth::user()->hasRole('intern');
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     */
     public function rules(): array
     {
-        $rules = [
+        return [
+            'task_id' => 'required|exists:tasks,id',
             'content' => 'required|string|max:1000',
+            'status' => 'sometimes|string|in:pending,in_progress,completed,review',
+            'comment' => 'sometimes|string|max:1000',
+            'attachment' => 'nullable|file|max:5120', // Max 5MB file size
         ];
-
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            $rules['status'] = 'required|in:pending,todo,completed';
-        }
-
-        return $rules;
     }
 
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
     public function messages(): array
     {
         return [
-            'content.required' => 'Comment content is required.',
-            'content.max' => 'Comment cannot exceed 1000 characters.',
-            'status.required' => 'Task status is required.',
-            'status.in' => 'Invalid task status selected.'
+            'task_id.required' => 'Task ID is required.',
+            'task_id.exists' => 'The selected task does not exist.',
+            'content.required' => 'Content is required.',
+            'content.max' => 'Content cannot be longer than 1000 characters.',
+            'status.in' => 'Invalid task status.',
+            'comment.max' => 'Comment cannot be longer than 1000 characters.',
+            'attachment.max' => 'The attachment must not be larger than 5MB.',
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        if ($this->status) {
+            $this->merge([
+                'status' => strtolower($this->status),
+            ]);
+        }
     }
 } 

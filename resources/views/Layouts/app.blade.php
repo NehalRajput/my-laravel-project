@@ -59,11 +59,11 @@
                                         Dashboard
                                     </a>
 
-                                    @can('read_interns')
+                                  
                                     <a href="{{ route('admin.interns.index') }}" class="nav-link {{ request()->routeIs('admin.interns.*') ? 'active' : '' }}">
                                         Intern
                                     </a>
-                                    @endcan
+                                  
 
                                     @can('read_admins')
                                     <a href="{{ route('admin.admins.index') }}" class="nav-link {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
