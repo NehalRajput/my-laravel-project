@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Message extends Model
 {
@@ -22,12 +23,12 @@ class Message extends Model
         'read_at' => 'datetime'
     ];
 
-    public function sender()
+    public function sender(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function receiver()
+    public function receiver(): MorphTo
     {
         return $this->morphTo();
     }

@@ -29,18 +29,21 @@ class MessageSent implements ShouldBroadcastNow
         ];
     }
 
+    public function broadcastAs(): string
+    {
+        return 'message.sent';
+    }
+
     public function broadcastWith(): array
     {
         return [
-            'message' => [
-                'id' => $this->message->id,
-                'content' => $this->message->content,
-                'sender_type' => $this->message->sender_type,
-                'sender_id' => $this->message->sender_id,
-                'receiver_type' => $this->message->receiver_type,
-                'receiver_id' => $this->message->receiver_id,
-                'created_at' => $this->message->created_at,
-            ]
+            'id' => $this->message->id,
+            'content' => $this->message->content,
+            'sender_type' => $this->message->sender_type,
+            'sender_id' => $this->message->sender_id,
+            'receiver_type' => $this->message->receiver_type,
+            'receiver_id' => $this->message->receiver_id,
+            'created_at' => $this->message->created_at,
         ];
     }
 }

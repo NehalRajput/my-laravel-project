@@ -1,327 +1,252 @@
-
 @extends('Layouts.app')
 
 @section('content')
 
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<div class="py-8">
+    <div class="max-w-full mx-auto px-4">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="p-4 lg:p-6 bg-white border-b border-gray-200">
+                <!-- Chat container with fixed dimensions -->
+                <div class="flex h-[600px] rounded-xl shadow-2xl overflow-hidden">
+                    <!-- Users List with fixed width -->
+                    <div class="w-[300px] border-r border-gray-200 bg-gray-50 rounded-l-xl flex flex-col overflow-hidden">
+                        <h3 class="text-lg font-semibold text-gray-900 p-4 sticky top-0 bg-gray-50/95 backdrop-blur-sm border-b border-gray-200 z-10 flex items-center">
+                            <svg class="h-5 w-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                            </svg>
+                            Chat List
+                        </h3>
 
-<div class="flex h-screen bg-white">
-    <!-- Left Sidebar -->
-    <div class="w-80 border-r">
-        <div class="h-16 border-b flex items-center px-4">
-            <h2 class="text-xl font-semibold text-gray-800">Messages</h2>
-        </div>
-        <div class="overflow-y-auto h-[calc(100vh-4rem)]" id="users-list">
-            @foreach($users as $user)
-                <div 
-                    onclick="loadChat({{ $user->id }}, '{{ $user->name }}', this)"
-                    class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer border-b user-item"
-                    data-user-id="{{ $user->id }}"
-                >
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-lg uppercase">
-                        {{ substr($user->name, 0, 2) }}
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <div class="flex items-center justify-between">
-                            <p class="font-medium text-gray-900">{{ $user->name }}</p>
-                            @if($user->received_messages_count > 0)
-                                <span class="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full unread-count">
-                                    {{ $user->received_messages_count }}
-                                </span>
+                        <div class="flex-1 overflow-y-auto">
+                            @if($userType === 'admin')
+                                <div class="mb-6">
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-2 bg-gray-100/80 backdrop-blur-sm sticky top-0 z-[5]">Interns</h4>
+                                    <div class="space-y-1">
+                                        @foreach($interns as $intern)
+                                            <button 
+                                                class="w-full text-left px-4 py-3 hover:bg-indigo-50/80 transition-all duration-200 user-select group relative"
+                                                data-user-type="intern"
+                                                data-user-id="{{ $intern->id }}"
+                                                data-user-name="{{ $intern->name }}"
+                                            >
+                                                <div class="flex items-center space-x-3">
+                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm">
+                                                        <span class="text-base font-semibold text-indigo-800">{{ substr($intern->name, 0, 1) }}</span>
+                                                    </span>
+                                                    <div>
+                                                        <span class="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{{ $intern->name }}</span>
+                                                        <p class="text-xs text-gray-500">Click to chat</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <div class="mb-6">
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-2 bg-gray-100/80 backdrop-blur-sm sticky top-0 z-[5]">Administrators</h4>
+                                    <div class="space-y-1">
+                                        @foreach($admins as $admin)
+                                            <button 
+                                                class="w-full text-left px-4 py-3 hover:bg-indigo-50/80 transition-all duration-200 user-select group relative"
+                                                data-user-type="admin"
+                                                data-user-id="{{ $admin->id }}"
+                                                data-user-name="{{ $admin->name }}"
+                                            >
+                                                <div class="flex items-center space-x-3">
+                                                    <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200 shadow-sm">
+                                                        <span class="text-base font-semibold text-indigo-800">{{ substr($admin->name, 0, 1) }}</span>
+                                                    </span>
+                                                    <div>
+                                                        <span class="text-sm font-medium text-gray-900 group-hover:text-indigo-600">{{ $admin->name }}</span>
+                                                        <p class="text-xs text-gray-500">Click to chat</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
                             @endif
                         </div>
-                        <p class="text-sm text-gray-500">{{ $user->email }}</p>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div class="flex-1 flex flex-col bg-white rounded-r-xl overflow-hidden">
+                        <!-- Header -->
+                        <div id="chat-header" class="px-6 py-4 border-b border-gray-200 hidden bg-white z-10 shadow-sm flex-shrink-0">
+                            <div class="flex items-center space-x-4">
+                                <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 shadow-md transition-colors duration-200">
+                                    <span id="chat-user-initial" class="text-lg font-semibold text-indigo-800"></span>
+                                </span>
+                                <div>
+                                    <h3 id="chat-user-name" class="text-lg font-semibold text-gray-900"></h3>
+                                    <div class="flex items-center">
+                                        <span class="h-2 w-2 rounded-full bg-green-500 mr-2"></span>
+                                        <p class="text-xs text-gray-500">Online</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages -->
+                        <div id="messages-container" class="flex-1 overflow-y-scroll px-4 py-3 hidden bg-gray-50/50 w-full">
+                            <div class="flex flex-col space-y-2 min-h-full w-full">
+                                <!-- Messages will appear here -->
+                            </div>
+                        </div>
+
+                        <!-- Message Form -->
+                        <div id="message-form" class="p-4 border-t border-gray-200 hidden bg-white z-10 shadow-inner flex-shrink-0">
+                            <form id="send-message-form" class="flex items-center space-x-2">
+                                <input type="hidden" id="receiver_type" name="receiver_type">
+                                <input type="hidden" id="receiver_id" name="receiver_id">
+                                <div class="flex-1 relative">
+                                    <input 
+                                        type="text" 
+                                        id="message-input" 
+                                        name="content" 
+                                        class="w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 outline-none text-sm"
+                                        placeholder="Type your message..."
+                                    >
+                                </div>
+                                <button 
+                                    type="submit"
+                                    class="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-full text-white hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-md"
+                                >
+                                    <svg class="h-5 w-5 rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- No Chat Selected -->
+                        <div id="no-chat-selected" class="flex-1 flex items-center justify-center bg-gray-50/50">
+                            <div class="text-center space-y-4 p-6 max-w-sm mx-auto">
+                                <div class="mx-auto h-20 w-20 text-gray-400 bg-gray-100 rounded-full flex items-center justify-center shadow-inner">
+                                    <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900">No conversation selected</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Choose a person from the list to start chatting</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- Chat Area -->
-    <div class="flex-1 flex flex-col">
-        <!-- Chat Header -->
-        <div class="h-16 border-b flex items-center px-6">
-            <h3 class="text-xl font-semibold text-gray-800" id="chat-header">Select a user to start chatting</h3>
-        </div>
-
-        <!-- Messages -->
-        <div class="flex-1 overflow-y-auto px-6 py-4" id="messages-container">
-            <div class="flex items-center justify-center h-full text-gray-500">
-                Select a conversation to start messaging
             </div>
-        </div>
-
-        <!-- Message Input -->
-        <div class="border-t p-4">
-            <form id="message-form" class="hidden">
-                @csrf
-                <div class="flex items-center space-x-4">
-                    <input 
-                        type="text" 
-                        id="message-input"
-                        class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-indigo-500"
-                        placeholder="Type your message..."
-                        required
-                    >
-                    <button 
-                        type="submit"
-                        class="bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                        </svg>
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
-    let currentReceiverId = null;
-    let isLoadingMessages = false;
-    
-    // Initialize Pusher
-    const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
-        encrypted: true
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle user selection
+    const userButtons = document.querySelectorAll('.user-select');
+    userButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userType = this.getAttribute('data-user-type');
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.getAttribute('data-user-name');
+
+            // Update hidden fields
+            document.getElementById('receiver_type').value = userType === 'intern' ? 'App\\Models\\User' : 'App\\Models\\Admin';
+            document.getElementById('receiver_id').value = userId;
+
+            // Update chat header
+            document.getElementById('chat-user-name').textContent = userName;
+            document.getElementById('chat-user-initial').textContent = userName.charAt(0);
+
+            // Show chat interface
+            document.getElementById('chat-header').classList.remove('hidden');
+            document.getElementById('messages-container').classList.remove('hidden');
+            document.getElementById('message-form').classList.remove('hidden');
+            document.getElementById('no-chat-selected').classList.add('hidden');
+        });
     });
 
-    const channel = pusher.subscribe('chat');
-    
-    channel.bind('message.sent', function(data) {
-        if (data.message.sender_id == currentReceiverId || 
-            data.message.receiver_id == currentReceiverId) {
-            appendMessage(data.message);
+    // Handle message form submission
+    const messageForm = document.getElementById('send-message-form');
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const messageInput = document.getElementById('message-input');
+        const content = messageInput.value.trim();
+        if (!content) return;
+
+        const formData = {
+            content: content,
+            receiver_type: document.getElementById('receiver_type').value,
+            receiver_id: document.getElementById('receiver_id').value,
+            _token: '{{ csrf_token() }}'
+        };
+
+        // Send message using fetch API
+        fetch('{{ route("messages.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Clear input
+            messageInput.value = '';
             
-            if (data.message.receiver_id == {{ auth()->id() }}) {
-                markMessageAsRead(data.message.id);
-            }
-        }
-        updateUnreadCount(data.message.sender_id);
-    });
+            // Add message to chat
+            appendMessage({
+                content: content,
+                sender_id: {{ Auth::id() }},
+                created_at: new Date(),
+                is_own: true
+            });
 
-    function loadChat(userId, userName, element) {
-        if (isLoadingMessages || userId === currentReceiverId) return;
-        isLoadingMessages = true;
-        
-        // Update active state
-        document.querySelectorAll('.user-item').forEach(item => {
-            item.classList.remove('bg-gray-50');
+            // Scroll to bottom
+            scrollToBottom();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send message. Please try again.');
         });
-        element.classList.add('bg-gray-50');
-        
-        // Show message form and loading state
-        document.getElementById('message-form').classList.remove('hidden');
-        document.getElementById('messages-container').innerHTML = `
-            <div class="flex items-center justify-center h-full">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            </div>
-        `;
-        
-        // Update header
-        document.getElementById('chat-header').textContent = `Chat with ${userName}`;
-        
-        // Set current receiver
-        currentReceiverId = userId;
-        
-        // Load messages
-        $.get(`{{ route('messages.get') }}?user_id=${userId}`, function(response) {
-            if (response.messages.length === 0) {
-                $('#messages-container').html(`
-                    <div class="flex items-center justify-center h-full text-gray-500">
-                        No messages yet. Start a conversation!
-                    </div>
-                `);
-            } else {
-                $('#messages-container').html('');
-                response.messages.forEach(message => {
-                    appendMessage(message);
-                });
-                scrollToBottom();
-            }
-            markAllAsRead(userId);
-            isLoadingMessages = false;
-        }).fail(function() {
-            $('#messages-container').html(`
-                <div class="flex items-center justify-center h-full text-red-500">
-                    Failed to load messages. Please try again.
-                </div>
-            `);
-            isLoadingMessages = false;
-        });
-    }
+    });
 
     function appendMessage(message) {
-        const isReceived = message.sender_id != {{ auth()->id() }};
-        const messageClass = isReceived ? 'received' : 'sent';
-        const time = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isOwn = message.sender_id === {{ Auth::id() }};
+        const messagesContainer = document.querySelector('#messages-container > div');
         
-        // Clear "No messages" text if it exists
-        const noMessages = document.querySelector('#messages-container .text-gray-500');
-        if (noMessages) {
-            noMessages.remove();
-        }
-        
-        const messageHtml = `
-            <div class="message ${messageClass}" data-message-id="${message.id}">
-                <div class="message-content">
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`;
+        messageDiv.innerHTML = `
+            <div class="max-w-[70%]">
+                <div class="${isOwn ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'} rounded-lg px-4 py-2 break-words">
                     ${message.content}
                 </div>
-                <div class="message-time">
-                    ${time}
+                <div class="text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : ''}">
+                    ${new Date(message.created_at).toLocaleTimeString()}
                 </div>
             </div>
         `;
         
-        $('#messages-container').append(messageHtml);
-        scrollToBottom();
+        messagesContainer.appendChild(messageDiv);
     }
 
     function scrollToBottom() {
         const container = document.getElementById('messages-container');
         container.scrollTop = container.scrollHeight;
     }
-
-    function markMessageAsRead(messageId) {
-        $.post(`{{ url('/messages') }}/${messageId}/read`, {
-            _token: $('meta[name="csrf-token"]').attr('content')
-        });
-    }
-
-    function markAllAsRead(userId) {
-        $.post(`{{ url('/messages/read-all') }}/${userId}`, {
-            _token: $('meta[name="csrf-token"]').attr('content')
-        }).done(() => {
-            const userItem = document.querySelector(`.user-item[data-user-id="${userId}"]`);
-            const unreadBadge = userItem.querySelector('.unread-count');
-            if (unreadBadge) unreadBadge.remove();
-        });
-    }
-
-    function updateUnreadCount(userId) {
-        $.get(`{{ route('chat.users') }}`, function(response) {
-            response.users.forEach(user => {
-                const userItem = document.querySelector(`.user-item[data-user-id="${user.id}"]`);
-                if (!userItem) return;
-                
-                let unreadBadge = userItem.querySelector('.unread-count');
-                
-                if (user.received_messages_count > 0) {
-                    if (unreadBadge) {
-                        unreadBadge.textContent = user.received_messages_count;
-                    } else {
-                        unreadBadge = document.createElement('span');
-                        unreadBadge.className = 'bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full unread-count';
-                        unreadBadge.textContent = user.received_messages_count;
-                        userItem.querySelector('.flex.items-center.justify-between').appendChild(unreadBadge);
-                    }
-                } else if (unreadBadge) {
-                    unreadBadge.remove();
-                }
-            });
-        });
-    }
-
-    // Handle message form submission
-    document.getElementById('message-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const input = document.getElementById('message-input');
-        const content = input.value.trim();
-        if (!content || !currentReceiverId) return;
-
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-
-        $.post('{{ route('messages.store') }}', {
-            receiver_id: currentReceiverId,
-            content: content,
-            _token: $('meta[name="csrf-token"]').attr('content')
-        })
-        .done(function(response) {
-            input.value = '';
-            appendMessage(response.message);
-        })
-        .fail(function(error) {
-            console.error('Error details:', error.responseJSON || error);
-            if (error.responseJSON?.message?.id) {
-                input.value = '';
-                appendMessage(error.responseJSON.message);
-                console.warn('Message saved but real-time update may have failed');
-            } else {
-                alert('Failed to send message: ' + (error.responseJSON?.message || error.statusText || 'Unknown error'));
-            }
-        })
-        .always(function() {
-            submitBtn.disabled = false;
-            input.focus();
-        });
-    });
-
-    // Auto-refresh users list
-    setInterval(() => {
-        if (currentReceiverId) updateUnreadCount();
-    }, 30000);
-
-    // Focus input when clicking messages container
-    document.getElementById('messages-container').addEventListener('click', function() {
-        if (currentReceiverId) {
-            document.getElementById('message-input').focus();
-        }
-    });
-
-    // Handle Enter key in message input
-    document.getElementById('message-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            document.getElementById('message-form').dispatchEvent(new Event('submit'));
-        }
-    });
+});
 </script>
 @endpush
 
-@push('styles')
-<style>
-    .message {
-        @apply mb-4 max-w-[70%];
-    }
-    .message.sent {
-        @apply ml-auto;
-    }
-    .message.received {
-        @apply mr-auto;
-    }
-    .message-content {
-        @apply px-4 py-2 rounded-lg inline-block;
-    }
-    .sent .message-content {
-        @apply bg-indigo-600 text-white;
-    }
-    .received .message-content {
-        @apply bg-gray-100 text-gray-900;
-    }
-    .message-time {
-        @apply text-xs text-gray-500 mt-1;
-    }
-    .sent .message-time {
-        @apply text-right;
-    }
-
-    /* Custom Scrollbar */
-    .overflow-y-auto::-webkit-scrollbar {
-        @apply w-1.5;
-    }
-    .overflow-y-auto::-webkit-scrollbar-track {
-        @apply bg-transparent;
-    }
-    .overflow-y-auto::-webkit-scrollbar-thumb {
-        @apply bg-gray-200 rounded-full;
-    }
-    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-        @apply bg-gray-300;
-    }
-</style>
-@endpush
-@endsection 
+@endsection
