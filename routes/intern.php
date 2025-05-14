@@ -3,11 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ChatController;
-
-use App\Http\Controllers\CommentController;
 use App\Http\Controllers\InternTaskController;
+use App\Http\Controllers\CommentController;
 
+// Guest Intern Routes
 Route::middleware(['guest:user'])->name('intern.')->group(function () {
     Route::controller(AuthController::class)->group(function () {
         Route::get('/login', 'showLogin')->name('login');
@@ -17,28 +16,24 @@ Route::middleware(['guest:user'])->name('intern.')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated User (Intern) Routes
-|--------------------------------------------------------------------------
-*/
-Route::middleware("auth:user")->group(function () {
-    // Intern Dashboard
+// Authenticated Intern Routes
+Route::middleware(['auth:user'])->group(function () {
+    // Dashboard
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     
-   // Intern Task Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/intern/tasks', [InternTaskController::class, 'index'])->name('intern.tasks.index');
-    Route::get('/intern/tasks/{task}', [InternTaskController::class, 'show'])->name('intern.tasks.show');
-    Route::post('/intern/tasks/{task}/comment', [InternTaskController::class, 'addComment'])->name('intern.tasks.comment');
-});
+    Route::prefix('intern')->name('intern.')->group(function () {
+        // Tasks
+        Route::controller(InternTaskController::class)->prefix('tasks')->name('tasks.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{task}', 'show')->name('show');
+            Route::patch('/{task}/status', 'updateStatus')->name('update-status');
+            Route::post('/{task}/comment', 'addComment')->name('comment');
+        });
 
-
-    // Comments Routes
-    Route::controller(CommentController::class)->prefix('comments')->name('intern.comments.')->group(function () {
-        Route::post('/tasks/{task}', 'store')->name('store');
+        // Comments
+        Route::post('/comments/tasks/{task}', [CommentController::class, 'store'])->name('comments.store');
     });
 
-     // Logout
+    // Authentication
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

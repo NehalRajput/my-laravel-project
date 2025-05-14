@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Permission;
 use App\Models\RolePermission;
 use App\Models\User;
+use App\Http\Requests\AdminRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -19,84 +20,65 @@ class AdminController extends Controller
 {
     public function index()
     {
-        $admins = Admin::all();
-        return view('Admin.index', compact('admins'));
+        try {
+            $admins = Admin::all();
+            return view('Admin.index', compact('admins'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch admins list', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to load administrators list.');
+        }
     }
 
     public function create()
     {
-        $permissions = Permission::all();
-        return view('Admin.create', compact('permissions'));
+        try {
+            $permissions = Permission::all();
+            return view('Admin.create', compact('permissions'));
+        } catch (\Exception $e) {
+            Log::error('Failed to load admin create form', ['error' => $e->getMessage()]);
+            return redirect()->route('admin.admins.index')->with('error', 'Failed to load create form.');
+        }
     }
 
-    public function store(Request $request)
+    public function store(AdminRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:admins',
-                'password' => 'required|min:6',
-                'permissions' => 'required|array|min:1',
-                'permissions.*' => 'exists:permissions,id'
+            DB::beginTransaction();
+
+            $admin = Admin::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role_id' => 2 // Admin role ID
             ]);
 
-            Log::info('Admin validation passed', ['email' => $validated['email']]);
+            Log::info('Admin created successfully', ['admin_id' => $admin->id]);
 
-            $validated['password'] = Hash::make($validated['password']);
-            $validated['role_id'] = 2; // Admin role ID
-
-            DB::beginTransaction();
-            try {
-                $admin = Admin::create([
-                    'name' => $validated['name'],
-                    'email' => $validated['email'],
-                    'password' => $validated['password'],
-                    'role_id' => $validated['role_id']
+            foreach ($request->permissions as $permissionId) {
+                RolePermission::create([
+                    'admin_id' => $admin->id,
+                    'permission_id' => $permissionId
                 ]);
-
-                Log::info('Admin created successfully', ['admin_id' => $admin->id]);
-
-                if ($request->has('permissions')) {
-                    foreach ($request->permissions as $permissionId) {
-                        RolePermission::create([
-                            'admin_id' => $admin->id,
-                            'permission_id' => $permissionId
-                        ]);
-                    }
-
-                    Log::info('Permissions assigned to admin', [
-                        'admin_id' => $admin->id,
-                        'permissions' => $request->permissions
-                    ]);
-                }
-
-                DB::commit();
-                return redirect()->route('admin.admins.index')
-                    ->with('success', 'Admin created successfully.');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Failed to create admin record', [
-                    'error' => $e->getMessage(),
-                    'email' => $validated['email']
-                ]);
-                return redirect()->back()
-                    ->with('error', 'Failed to create admin. Please try again.')
-                    ->withInput();
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Admin validation failed', [
-                'errors' => $e->errors(),
-                'input' => $request->except('password')
+            DB::commit();
+            
+            Log::info('Permissions assigned to admin', [
+                'admin_id' => $admin->id,
+                'permissions' => $request->permissions
             ]);
-            throw $e;
+
+            return redirect()->route('admin.admins.index')
+                ->with('success', 'Admin created successfully.');
+
         } catch (\Exception $e) {
-            Log::error('Unexpected error while creating admin', [
+            DB::rollBack();
+            Log::error('Failed to create admin', [
                 'error' => $e->getMessage(),
-                'input' => $request->except('password')
+                'email' => $request->email
             ]);
             return redirect()->back()
-                ->with('error', 'An unexpected error occurred. Please try again.')
+                ->with('error', 'Failed to create admin. Please try again.')
                 ->withInput();
         }
     }
@@ -108,55 +90,58 @@ class AdminController extends Controller
             $adminPermissions = $admin->permissions->pluck('id')->toArray();
             return view('Admin.edit', compact('admin', 'permissions', 'adminPermissions'));
         } catch (\Exception $e) {
-            Log::error('Error loading admin edit form', ['error' => $e->getMessage()]);
-            return redirect()->route('admin.admins.index')->with('error', 'Failed to load admin edit page.');
+            Log::error('Error loading admin edit form', [
+                'admin_id' => $admin->id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->route('admin.admins.index')
+                ->with('error', 'Failed to load admin edit page.');
         }
     }
 
-    public function update(Request $request, Admin $admin)
+    public function update(AdminRequest $request, Admin $admin)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:admins,email,' . $admin->id,
-                'password' => 'nullable|min:6',
-                'permissions' => 'required|array|min:1',
-                'permissions.*' => 'exists:permissions,id'
-            ]);
+            DB::beginTransaction();
 
-            if (isset($validated['password'])) {
-                $validated['password'] = Hash::make($validated['password']);
-            } else {
-                unset($validated['password']);
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+            ];
+
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
             }
 
-            $admin->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'] ?? $admin->password
-            ]);
+            $admin->update($updateData);
 
+            // Delete existing permissions
             RolePermission::where('admin_id', $admin->id)->delete();
 
-            if ($request->has('permissions')) {
-                foreach ($request->permissions as $permissionId) {
-                    RolePermission::create([
-                        'admin_id' => $admin->id,
-                        'permission_id' => $permissionId
-                    ]);
-                }
+            // Assign new permissions
+            foreach ($request->permissions as $permissionId) {
+                RolePermission::create([
+                    'admin_id' => $admin->id,
+                    'permission_id' => $permissionId
+                ]);
             }
+
+            DB::commit();
+
+            Log::info('Admin updated successfully', ['admin_id' => $admin->id]);
 
             return redirect()->route('admin.admins.index')
                 ->with('success', 'Admin updated successfully.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed during admin update', [
-                'errors' => $e->errors()
-            ]);
-            throw $e;
+
         } catch (\Exception $e) {
-            Log::error('Error updating admin', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Failed to update admin. Please try again.');
+            DB::rollBack();
+            Log::error('Error updating admin', [
+                'admin_id' => $admin->id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()
+                ->with('error', 'Failed to update admin. Please try again.')
+                ->withInput();
         }
     }
 

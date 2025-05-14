@@ -26,6 +26,19 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
     // Admin Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
+    // Task Management
+    Route::controller(TaskController::class)->prefix('tasks')->name('tasks.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{task}/edit', 'edit')->name('edit');
+        Route::put('/{task}', 'update')->name('update');
+        Route::delete('/{task}', 'destroy')->name('destroy');
+        Route::post('/{task}/assign', 'assignIntern')->name('assign-intern');
+        Route::delete('/{task}/detach/{intern}', 'detachIntern')->name('detach-intern');
+        Route::patch('/{task}/status', 'updateStatus')->name('update-status');
+    });
+
     // Intern Management
     Route::controller(InternController::class)->prefix('interns')->name('interns.')->group(function () {
         Route::get('/', 'index')->name('index')->can('read_interns');
@@ -77,15 +90,6 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
 
    
 
-    Route::controller(TaskController::class)->group(function () {
-        Route::get('/tasks', 'index')->name('tasks.index')->can('read_tasks');
-        Route::get('/tasks/create', 'create')->name('tasks.create')->can('create_tasks');
-        Route::post('/tasks', 'store')->name('tasks.store')->can('create_tasks');
-        Route::get('/tasks/{task}/edit', 'edit')->name('tasks.edit')->can('update_tasks');
-        Route::put('/tasks/{task}', 'update')->name('tasks.update')->can('update_tasks');
-        Route::delete('/tasks/{task}', 'destroy')->name('tasks.destroy')->can('delete_tasks');
-        Route::post('/tasks/{task}/assign-intern', 'assignIntern')->name('tasks.assign-intern');
-        Route::delete('/tasks/{task}/interns/{intern}', 'detachIntern')->name('tasks.detach-intern');
-    });
+   
     
 });

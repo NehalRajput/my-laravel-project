@@ -3,17 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\InternRequest;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class InternController extends Controller
 {
     public function tasks()
     {
         try {
-            $tasks = Auth::user()->tasks;
+            $tasks = Auth::user()->tasks()
+                ->with(['comments', 'interns'])
+                ->latest()
+                ->get();
+
+            Log::info('Tasks fetched successfully for intern', [
+                'user_id' => Auth::id(),
+                'task_count' => $tasks->count()
+            ]);
+
             return view('intern.tasks', compact('tasks'));
         } catch (\Exception $e) {
             Log::error('Failed to fetch tasks for intern', [
@@ -24,29 +34,29 @@ class InternController extends Controller
         }
     }
 
-    public function updateTaskStatus(Request $request, Task $task)
+    public function updateTaskStatus(InternRequest $request, Task $task)
     {
         try {
-            $request->validate([
-                'status' => 'required|in:pending,todo,completed'
-            ]);
+            DB::beginTransaction();
 
             if (!$task->interns->contains(Auth::id())) {
-                return redirect()->back()->with('error', 'Unauthorized to update this task');
+                throw new \Exception('Unauthorized to update this task');
             }
 
-            $task->update([
-                'status' => $request->status
+            $task->update(['status' => $request->status]);
+
+            DB::commit();
+
+            Log::info('Task status updated successfully', [
+                'task_id' => $task->id,
+                'user_id' => Auth::id(),
+                'new_status' => $request->status
             ]);
 
             return redirect()->back()->with('success', 'Task status updated successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed when updating task status', [
-                'errors' => $e->errors(),
-                'user_id' => Auth::id()
-            ]);
-            throw $e;
+
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to update task status', [
                 'error' => $e->getMessage(),
                 'task_id' => $task->id,
