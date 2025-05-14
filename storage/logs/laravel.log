@@ -37589,3 +37589,107 @@
 [2025-05-14 06:32:19] local.ERROR: Failed to store message {"error":"Invalid channel name private-chat.App\\Models\\User.1"} 
 [2025-05-14 06:32:22] local.ERROR: Failed to store message {"error":"Invalid channel name private-chat.App\\Models\\User.1"} 
 [2025-05-14 06:32:28] local.ERROR: Failed to store message {"error":"Invalid channel name private-chat.App\\Models\\User.1"} 
+[2025-05-14 06:58:00] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:00] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:01] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:01] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:16] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:16] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:26] local.ERROR: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php:205)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(141): Illuminate\\Foundation\\ProviderRepository->createProvider('App\\\\Models\\\\App\\\\...')
+#1 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(60): Illuminate\\Foundation\\ProviderRepository->compileManifest(Array)
+#2 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(870): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#3 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(37): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#4 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(341): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#5 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(473): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#6 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(195): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#7 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1234): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#8 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
+#9 {main}
+"} 
+[2025-05-14 06:58:26] local.ERROR: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php:205)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(141): Illuminate\\Foundation\\ProviderRepository->createProvider('App\\\\Models\\\\App\\\\...')
+#1 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(60): Illuminate\\Foundation\\ProviderRepository->compileManifest(Array)
+#2 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(870): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#3 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(37): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#4 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(341): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#5 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(473): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#6 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(195): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#7 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1234): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#8 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
+#9 {main}
+"} 
+[2025-05-14 06:58:46] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 06:58:46] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\App\Providers\AppServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\App\\Providers\\AppServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 07:01:57] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\Illuminate\Broadcasting\BroadcastServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\Illuminate\\Broadcasting\\BroadcastServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 07:01:57] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\Illuminate\Broadcasting\BroadcastServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\Illuminate\\Broadcasting\\BroadcastServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 07:01:58] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\Illuminate\Broadcasting\BroadcastServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\Illuminate\\Broadcasting\\BroadcastServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-6f0f1acd77de9f7869cf9462ed4d802b.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 07:01:58] local.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: Class "App\Models\Illuminate\Broadcasting\BroadcastServiceProvider" not found {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: Class \"App\\Models\\Illuminate\\Broadcasting\\BroadcastServiceProvider\" not found at /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php:33)
+[stacktrace]
+#0 /Users/nehalrajput1710/Downloads/Task_Managment_system-Developer/my-laravel-project/vendor/_laravel_ide/discover-5802e590a92e23606bb54d2909564178.php(62): LaravelVsCode::startupError(Object(Error))
+#1 {main}
+"} 
+[2025-05-14 07:06:27] local.INFO: Message store attempt {"request_data":{"content":"fghrth","receiver_type":"App\\Models\\User","receiver_id":"1","_token":"xoo90bVS23GYHugu1TPdaSi58ebHN5VyeCgENLMH"},"user":"admin"} 
+[2025-05-14 07:06:27] local.INFO: Broadcasting message {"message_id":41,"sender":"Admin User","receiver_id":"1"} 
+[2025-05-14 07:06:27] local.INFO: Message broadcast complete  
+[2025-05-14 07:06:47] local.INFO: Message store attempt {"request_data":{"content":"hello","receiver_type":"App\\Models\\Admin","receiver_id":"1","_token":"aqp89IYTMzuLgdvY5WXiM3UULWKQ5ylJLQUJSneY"},"user":"intern"} 
+[2025-05-14 07:06:47] local.INFO: Broadcasting message {"message_id":42,"sender":"John Intern","receiver_id":"1"} 
+[2025-05-14 07:06:47] local.INFO: Message broadcast complete  
+[2025-05-14 07:09:24] local.INFO: Message store attempt {"request_data":{"content":"erer","receiver_type":"App\\Models\\Admin","receiver_id":"1","_token":"aqp89IYTMzuLgdvY5WXiM3UULWKQ5ylJLQUJSneY"},"user":"intern"} 
+[2025-05-14 07:09:24] local.INFO: Broadcasting message {"message_id":43,"sender":"John Intern","receiver_id":"1"} 
+[2025-05-14 07:09:24] local.INFO: Message broadcast complete  
+[2025-05-14 07:10:55] local.INFO: Message store attempt {"request_data":{"content":"dgret","receiver_type":"App\\Models\\Admin","receiver_id":"1","_token":"aqp89IYTMzuLgdvY5WXiM3UULWKQ5ylJLQUJSneY"},"user":"intern"} 
+[2025-05-14 07:10:55] local.INFO: Broadcasting message {"message_id":44,"sender":"John Intern","receiver_id":"1"} 
+[2025-05-14 07:10:55] local.INFO: Message broadcast complete  
+[2025-05-14 07:11:12] local.INFO: Message store attempt {"request_data":{"content":"ergerg","receiver_type":"App\\Models\\User","receiver_id":"1","_token":"xoo90bVS23GYHugu1TPdaSi58ebHN5VyeCgENLMH"},"user":"admin"} 
+[2025-05-14 07:11:12] local.INFO: Broadcasting message {"message_id":45,"sender":"Admin User","receiver_id":"1"} 
+[2025-05-14 07:11:12] local.INFO: Message broadcast complete  
+[2025-05-14 07:11:17] local.INFO: Message store attempt {"request_data":{"content":"erg","receiver_type":"App\\Models\\User","receiver_id":"1","_token":"xoo90bVS23GYHugu1TPdaSi58ebHN5VyeCgENLMH"},"user":"admin"} 
+[2025-05-14 07:11:17] local.INFO: Broadcasting message {"message_id":46,"sender":"Admin User","receiver_id":"1"} 
+[2025-05-14 07:11:17] local.INFO: Message broadcast complete  

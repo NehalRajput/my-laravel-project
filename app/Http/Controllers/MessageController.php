@@ -61,9 +61,20 @@ class MessageController extends Controller
                 'receiver_id' => $request->receiver_id,
             ]);
 
+            // Add sender name to the message
+            $message->sender_name = $sender->name;
+
+            // Broadcast the message
+            broadcast(new MessageSent($message))->toOthers();
+
             return response()->json([
                 'status' => 'success',
-                'message' => $message
+                'message' => $message,
+                'current_user' => [
+                    'id' => $sender->id,
+                    'type' => get_class($sender),
+                    'name' => $sender->name
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -87,6 +98,7 @@ class MessageController extends Controller
             $currentUserType = get_class($currentUser);
             
             $otherUserType = $request->user_type === 'intern' ? User::class : Admin::class;
+            $otherUser = $otherUserType::find($request->user_id);
 
             $messages = Message::where(function($query) use ($currentUser, $currentUserType, $request, $otherUserType) {
                 // Messages sent by current user to the other user
@@ -106,9 +118,20 @@ class MessageController extends Controller
                 });
             })
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->map(function($message) use ($currentUser, $otherUser) {
+                $message->sender_name = $message->sender_id === $currentUser->id ? $currentUser->name : $otherUser->name;
+                return $message;
+            });
 
-            return response()->json(['messages' => $messages]);
+            return response()->json([
+                'messages' => $messages,
+                'current_user' => [
+                    'id' => $currentUser->id,
+                    'type' => get_class($currentUser),
+                    'name' => $currentUser->name
+                ]
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to get messages', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Failed to load messages'], 500);

@@ -7,11 +7,11 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcastNow
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,28 +22,22 @@ class MessageSent implements ShouldBroadcastNow
         $this->message = $message;
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return [
-            new PrivateChannel('chat.' . $this->message->receiver_type . '.' . $this->message->receiver_id),
-        ];
+        return new PrivateChannel('chat.' . $this->message->receiver_id);
     }
 
-    public function broadcastAs(): string
+    public function broadcastAs()
     {
-        return 'message.sent';
+        return 'MessageSent';
     }
 
-    public function broadcastWith(): array
+    public function broadcastWith()
     {
         return [
-            'id' => $this->message->id,
-            'content' => $this->message->content,
-            'sender_type' => $this->message->sender_type,
-            'sender_id' => $this->message->sender_id,
-            'receiver_type' => $this->message->receiver_type,
-            'receiver_id' => $this->message->receiver_id,
-            'created_at' => $this->message->created_at,
+            'message' => array_merge($this->message->toArray(), [
+                'sender_name' => $this->message->sender->name
+            ])
         ];
     }
 }
