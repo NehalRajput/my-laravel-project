@@ -10,6 +10,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Admin\InternController;
+use App\Http\Controllers\RolePermissionController;
 
 Route::middleware(['guest:admin'])->name('admin.')->group(function () {
     Route::prefix('admin')->controller(AuthController::class)->group(function () {
@@ -25,6 +26,19 @@ Route::middleware(['guest:admin'])->name('admin.')->group(function () {
 Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(function () {
     // Admin Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Admin Management
+    Route::get('/create', [AdminController::class, 'create'])->name('create');
+    Route::post('/', [AdminController::class, 'store'])->name('store');
+    Route::get('/', [AdminController::class, 'index'])->name('index');
+
+    // Role & Permission Management
+    Route::get('/roles', [RolePermissionController::class, 'roles'])->name('roles.index')->can('read_admins');
+    Route::post('/roles', [RolePermissionController::class, 'createRole'])->name('roles.create')->can('read_admins');
+    Route::post('/roles/{role}/permissions', [RolePermissionController::class, 'assignPermissions'])->name('roles.assign-permissions')->can('read_admins');
+    
+    Route::get('/permissions', [RolePermissionController::class, 'permissions'])->name('permissions.index')->can('read_admins');
+    Route::post('/permissions', [RolePermissionController::class, 'createPermission'])->name('permissions.create')->can('read_admins');
 
     // Task Management
     Route::controller(TaskController::class)->prefix('tasks')->name('tasks.')->group(function () {
@@ -49,14 +63,6 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
         Route::delete('/{intern}', 'destroy')->name('destroy')->can('delete_interns');
     });
 
-    /*
-    // Chat System
-    Route::controller(ChatController::class)->prefix('chat')->name('chat.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/send', 'sendMessage')->name('send');
-        Route::get('/messages/{user}', 'getMessages')->name('messages');
-        Route::post('/mark-read', 'markAsRead')->name('mark-read');
-    });*/
     
     Route::controller(CommentController::class)->group(function () {
         Route::get('/tasks/{task}/comments', 'index')->name('comments.index')->middleware('auth:admin');
@@ -74,7 +80,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
 | Super Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(function () {
+Route::prefix('Superadmin')->middleware(['auth:admin'])->name('admin.')->group(function () {
     // Admin Management
     Route::controller(AdminController::class)->prefix('admins')->name('admins.')->group(function () {
         Route::get('/', 'index')->name('index')->can('read_admins');

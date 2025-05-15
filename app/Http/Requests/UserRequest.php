@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
 {
@@ -15,14 +16,17 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed'
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'role_id' => ['required', 'exists:roles,id'],
         ];
 
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            $rules['email'] = 'required|email|unique:users,email,' . $this->user->id;
-            $rules['password'] = 'nullable|min:8|confirmed';
+        // Only require password for new users
+        if ($this->isMethod('POST')) {
+            $rules['password'] = ['required', 'string', Password::defaults()];
+        } else {
+            $rules['password'] = ['nullable', 'string', Password::defaults()];
+            $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->user->id];
         }
 
         return $rules;

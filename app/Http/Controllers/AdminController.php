@@ -20,70 +20,33 @@ class AdminController extends Controller
 {
     public function index()
     {
-        try {
-            $admins = Admin::all();
-            return view('Admin.index', compact('admins'));
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch admins list', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Failed to load administrators list.');
-        }
+        $admins = Admin::with('role')->get();
+        return view('admin.index', compact('admins'));
     }
 
     public function create()
     {
-        try {
-            $permissions = Permission::all();
-            return view('Admin.create', compact('permissions'));
-        } catch (\Exception $e) {
-            Log::error('Failed to load admin create form', ['error' => $e->getMessage()]);
-            return redirect()->route('admin.admins.index')->with('error', 'Failed to load create form.');
-        }
+        $roles = Role::all();
+        return view('admin.create', compact('roles'));
     }
 
-    public function store(AdminRequest $request)
+    public function store(Request $request)
     {
-        try {
-            DB::beginTransaction();
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:admins,email',
+            'password' => 'required|min:6',
+            'role_id' => 'required|exists:roles,id'
+        ]);
 
-            $admin = Admin::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role_id' => 2 // Admin role ID
-            ]);
+        Admin::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id' => $request->role_id
+        ]);
 
-            Log::info('Admin created successfully', ['admin_id' => $admin->id]);
-
-            // Only assign permissions if they were selected
-            if ($request->has('permissions')) {
-                foreach ($request->permissions as $permissionId) {
-                    RolePermission::create([
-                        'admin_id' => $admin->id,
-                        'permission_id' => $permissionId
-                    ]);
-                }
-
-                Log::info('Permissions assigned to admin', [
-                    'admin_id' => $admin->id,
-                    'permissions' => $request->permissions
-                ]);
-            }
-
-            DB::commit();
-            
-            return redirect()->route('admin.admins.index')
-                ->with('success', 'Admin created successfully.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Failed to create admin', [
-                'error' => $e->getMessage(),
-                'email' => $request->email
-            ]);
-            return redirect()->back()
-                ->with('error', 'Failed to create admin. Please try again.')
-                ->withInput();
-        }
+        return redirect()->route('admin.login')->with('success', 'Admin created successfully. Please login.');
     }
 
     public function edit(Admin $admin)

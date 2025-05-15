@@ -14,33 +14,29 @@ class UserController extends Controller
     public function index()
     {
         try {
-            $users = User::with('role')
-                ->whereHas('role', function($query) {
-                    $query->where('name', 'intern');
-                })
-                ->latest()
-                ->get();
+            $users = User::with('role')->latest()->get();
 
-            Log::info('Interns list loaded successfully', [
+            Log::info('Users list loaded successfully', [
                 'count' => $users->count()
             ]);
 
             return view('Admin.interns.index', compact('users'));
         } catch (\Exception $e) {
-            Log::error('Failed to load interns list', [
+            Log::error('Failed to load users list', [
                 'error' => $e->getMessage()
             ]);
             return redirect()->back()
-                ->with('error', 'Failed to load interns list. Please try again.');
+                ->with('error', 'Failed to load users list. Please try again.');
         }
     }
 
     public function create()
     {
         try {
-            return view('Admin.interns.create');
+            $roles = Role::all();
+            return view('Admin.interns.create', compact('roles'));
         } catch (\Exception $e) {
-            Log::error('Failed to load intern creation page', [
+            Log::error('Failed to load user creation page', [
                 'error' => $e->getMessage()
             ]);
             return redirect()->back()
@@ -53,31 +49,32 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
 
-            $internRole = Role::where('name', 'intern')->firstOrFail();
+            $role = Role::findOrFail($request->role_id);
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role_id' => $internRole->id
+                'role_id' => $role->id
             ]);
 
             DB::commit();
 
-            Log::info('Intern created successfully', [
-                'user_id' => $user->id
+            Log::info('User created successfully', [
+                'user_id' => $user->id,
+                'role' => $role->name
             ]);
 
             return redirect()->route('admin.interns.index')
-                ->with('success', 'Intern created successfully');
+                ->with('success', 'User created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to create intern', [
+            Log::error('Failed to create user', [
                 'error' => $e->getMessage(),
                 'data' => $request->except('password')
             ]);
             return redirect()->back()
-                ->with('error', 'Failed to create intern. Please try again.')
+                ->with('error', 'Failed to create user. Please try again.')
                 ->withInput($request->except('password'));
         }
     }
@@ -85,17 +82,14 @@ class UserController extends Controller
     public function edit(User $user)
     {
         try {
-            if (!$user->isIntern()) {
-                throw new \Exception('Only intern accounts can be edited here');
-            }
-
-            Log::info('Loading intern edit page', [
+            $roles = Role::all();
+            Log::info('Loading user edit page', [
                 'user_id' => $user->id
             ]);
 
-            return view('Admin.interns.edit', compact('user'));
+            return view('Admin.interns.edit', compact('user', 'roles'));
         } catch (\Exception $e) {
-            Log::error('Failed to load intern edit page', [
+            Log::error('Failed to load user edit page', [
                 'error' => $e->getMessage(),
                 'user_id' => $user->id
             ]);
@@ -109,10 +103,6 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
 
-            if (!$user->isIntern()) {
-                throw new \Exception('Only intern accounts can be edited here');
-            }
-
             $data = $request->except('password');
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
@@ -122,21 +112,21 @@ class UserController extends Controller
 
             DB::commit();
 
-            Log::info('Intern updated successfully', [
+            Log::info('User updated successfully', [
                 'user_id' => $user->id
             ]);
 
             return redirect()->route('admin.interns.index')
-                ->with('success', 'Intern updated successfully');
+                ->with('success', 'User updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to update intern', [
+            Log::error('Failed to update user', [
                 'error' => $e->getMessage(),
                 'user_id' => $user->id,
                 'data' => $request->except('password')
             ]);
             return redirect()->back()
-                ->with('error', 'Failed to update intern. ' . $e->getMessage())
+                ->with('error', 'Failed to update user. ' . $e->getMessage())
                 ->withInput($request->except('password'));
         }
     }
@@ -146,28 +136,24 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
 
-            if (!$user->isIntern()) {
-                throw new \Exception('Only intern accounts can be deleted');
-            }
-
             $user->delete();
 
             DB::commit();
 
-            Log::info('Intern deleted successfully', [
+            Log::info('User deleted successfully', [
                 'user_id' => $user->id
             ]);
 
             return redirect()->route('admin.interns.index')
-                ->with('success', 'Intern deleted successfully');
+                ->with('success', 'User deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to delete intern', [
+            Log::error('Failed to delete user', [
                 'error' => $e->getMessage(),
                 'user_id' => $user->id
             ]);
             return redirect()->route('admin.interns.index')
-                ->with('error', 'Failed to delete intern. ' . $e->getMessage());
+                ->with('error', 'Failed to delete user. ' . $e->getMessage());
         }
     }
 

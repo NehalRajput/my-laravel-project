@@ -7,24 +7,47 @@ use App\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        $permissions = [
-            ['permission' => 'manage_interns'],
-            ['permission' => 'manage_tasks'],
-            ['permission' => 'view_reports'],
-            ['permission' => 'manage_admins'],
-            ['permission' => 'assign_tasks'],
-            ['permission' => 'view_tasks'],
-            ['permission' => 'edit_tasks'],
-            ['permission' => 'delete_tasks'],
+        // Task related permissions
+        $taskPermissions = [
+            'create-task',
+            'edit-task',
+            'delete-task',
+            'view-task',
+            'assign-task',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate($permission);
+        // User management permissions
+        $userPermissions = [
+            'create-intern',
+            'edit-intern',
+            'delete-intern',
+            'view-intern',
+            
+            'create-admin',
+            'edit-admin',
+            'delete-admin',
+            'view-admin',
+            
+            'create-manager',
+            'edit-manager',
+            'delete-manager',
+            'view-manager',
+        ];
+
+        // System permissions
+        $systemPermissions = [
+            'view-dashboard',
+            'manage-permissions',
+            'view-reports',
+            'manage-settings',
+        ];
+
+        $allPermissions = array_merge($taskPermissions, $userPermissions, $systemPermissions);
+
+        foreach ($allPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
         }
     }
 } 
