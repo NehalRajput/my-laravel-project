@@ -77,6 +77,10 @@
                                     </a>
                                     @endcan
 
+                                    <a href="{{ route('admin.permissions.index') }}" class="nav-link {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                                        Permissions
+                                    </a>
+
                                     <a href="{{ route('chat') }}" class="nav-link {{ request()->routeIs('chat') ? 'active' : '' }}">
                                         Messages
                                         @if(auth()->user()->receivedMessages()->whereNull('read_at')->count() > 0)

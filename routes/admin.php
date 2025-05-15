@@ -67,6 +67,20 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
 
     // Admin Logout
     Route::post('/logout', [AuthController::class, 'adminLogout'])->name('logout');
+
+    // Permission routes
+    Route::prefix('permissions')->name('permissions.')->group(function () {
+        Route::get('/', [PermissionController::class, 'index'])->name('index');
+        Route::get('/create', [PermissionController::class, 'create'])->name('create');
+        Route::post('/', [PermissionController::class, 'store'])->name('store');
+        Route::get('/{permissionName}/edit', [PermissionController::class, 'edit'])->name('edit');
+        Route::put('/{permissionName}', [PermissionController::class, 'update'])->name('update');
+        Route::delete('/{permissionName}', [PermissionController::class, 'destroy'])->name('destroy');
+        Route::get('/assign', [PermissionController::class, 'assignForm'])->name('assign');
+        Route::post('/assign', [PermissionController::class, 'assign'])->name('assign.store');
+    });
+
+   
 });
 
 /*
